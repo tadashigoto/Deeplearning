@@ -1,34 +1,46 @@
-# 3.3 単純パーセプトロン (P.80)
+# 3.4 ロジスティック回帰 (P.93)
 import numpy as np
-rng = np.random.RandomState(123)
-d = 2     # データの次元
-N = 10    # 各パターンのデータ数
-mean = 5  # ニューロンが発火するデータの平均値
-x1 = rng.randn(N,d) + np.array([0,0])        # randnは標準正規分布のランダム数発生,平均:0 標準偏差:1
-x2 = rng.randn(N,d) + np.array([mean,mean])  # x1,x2は2次元(10x2)の乱数,x2は各要素にそれぞれ5を加算
-                                             # np.array([x,x])は1x2のベクトルなのでx1,x2の各行の要素に加えられる
-x=np.concatenate((x1,x2),axis=0)             # 行方向に結合
-# 生成したデータをパーセプトロンで分類する
-w=np.zeros(d)
-b = 0 # -θ:閾値の補数
-def y(x):
-    return step(np.dot(w,x)+b)
-def step(x):
-    return 1 * (x>0)
-# 先頭10件は非発火、後半10件なら発火する
-def t(i):
-    if i < N:
-        return 0
-    else:
-        return 1
-while True:
-    classified = True
-    for i in range(N*2):
-        delta_w = (t(i) - y(x[i])) * x[i]
-        delta_b = (t(i)) - y(x[i])
-        w += delta_w
-        b += delta_b
-        classified *= all(delta_w ==0) * (delta_b == 0)
-    if classified:
-        break
-print(w,b)
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+tf.set_random_seed(0)
+
+w = tf.Variable(tf.zeros([2,1]))
+b = tf.Variable(tf.zeros([1]))
+
+x = tf.placeholder(tf.float32, shape=[None,2])
+t = tf.placeholder(tf.float32, shape=[None,1])
+y = tf.nn.sigmoid(tf.matmul(x,w)+b) # matmul:xとwの内積
+
+# 交差エントロピー誤差関数
+cross_entropy = tf.reduce_sum(t * tf.log(y) + (1-t) * tf.log(1-y))
+# 確率的勾配降下法(学習率0.1)
+train_step = tf.train.GradientDescentOptimizer(0.1).minimize(cross_entropy)
+correct_prediction = tf.equal(tf.to_float(tf.greater(y,0.5)),t) # ニューロンの発火
+
+X = np.array([[0,0],[0,1],[1,0],[1,1]])
+Y = np.array([[0],[1],[1],[1]])
+
+init = tf.global_variables_initializer()
+sess = tf.Session()
+sess.run(init)
+# 学習
+for epoch in range(200):
+    sess.run(train_step, feed_dict ={
+        x: X,
+        t: Y
+    })
+# 学習結果の確認
+classified = correct_prediction.eval(session=sess, feed_dict={
+    x: X,
+    t: Y
+})
+prob = y.eval(session=sess,feed_dict={
+    x: X
+})
+print('classified')
+print(classified)
+print()
+print('output probalilitey:')
+print(prob)
+print('w:',sess.run(w))
