@@ -3,6 +3,9 @@ import numpy as np
 # import tensorflow as tf
 import tensorflow.compat.v1 as tf
 tf.disable_v2_behavior()
+'''
+# モデル設定
+'''
 tf.set_random_seed(0)
 
 w = tf.Variable(tf.zeros([2,1]))
@@ -43,4 +46,3 @@ print(classified)
 print()
 print('output probalilitey:')
 print(prob)
-print('w:',sess.run(w))
