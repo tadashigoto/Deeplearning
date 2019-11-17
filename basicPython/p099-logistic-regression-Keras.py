@@ -4,7 +4,7 @@ from keras.models import Sequential
 from keras.layers import Dense,Activation
 from keras.optimizers import SGD
 model = Sequential([
-    Dense(imput_dim=2, units=-1),
+    Dense(input_dim=2, units=1),
     Activation('sigmoid')
 ])
 # 確率的勾配降下法
@@ -18,8 +18,9 @@ Y = np.array([[0],[1],[1],[1]])
 
 model.fit(X,Y, epochs=200,batch_size=1)
 # 学習結果の確認
-classes = model.predit_classes(X,batch_size=1)
-prob = model.predict_proba(X,Batch_size=1)
+
+classes = model.predict_classes(X, batch_size=1)
+prob = model.predict_proba(X, batch_size=1)
 
 print('classified:')
 print(Y == classes)
