@@ -26,6 +26,15 @@ n_out = len(Y[0])
 model = Sequential()
 model.add(Dense(n_hidden,input_dim=n_in))
 model.add(Activation('sigmoid'))
+
+model.add(Dense(n_hidden))
+model.add(Activation('sigmoid'))
+model.add(Dense(n_hidden))
+model.add(Activation('sigmoid'))
+model.add(Dense(n_hidden))
+model.add(Activation('sigmoid'))
+
+
 model.add(Dense(n_out))
 model.add(Activation('softmax'))
 

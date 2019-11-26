@@ -1,3 +1,6 @@
+'''
+ReLU
+'''
 import numpy as np
 import sys
 from sklearn import datasets
@@ -26,13 +29,21 @@ n_out = len(Y[0])
 model = Sequential()
 model.add(Dense(n_hidden,input_dim=n_in))
 model.add(Activation('sigmoid'))
+
+model.add(Dense(n_hidden))
+model.add(Activation('relu'))
+model.add(Dense(n_hidden))
+model.add(Activation('relu'))
+model.add(Dense(n_hidden))
+model.add(Activation('relu'))
+
 model.add(Dense(n_out))
 model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy',optimizer=SGD(lr=0.01),metrics=['accuracy'])
 
 # モデル学習
-epochs = 1000
+epochs = 50
 batch_size = 100
 model.fit(X_train,Y_train,epochs=epochs,batch_size=batch_size)
 # 予測精度の評価
