@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.utils import shuffle
 from keras.models import Sequential
 from keras.layers import Dense,Activation

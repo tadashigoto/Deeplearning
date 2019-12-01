@@ -5,110 +5,47 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
-np.random.seed(0)
-tf.set_random_seed(1234)
+def inference(x, keep_prob, n_in, n_hidden, n_out):
+    def weight_variable(shape):
+        initial = tf.truncated_normal(shape, stddev=0.01)
+        return tf.Variable(initial)
+    def vias_variable(shape):
+        initial = tf.zeros(shape)
+        return tf.Variable(initial)
+    # 入力層 - 隠れ層、隠れ層 - 隠れ層
+    for i,n_hidden in enumerate(n_hiddens):
+        if i == 0:
+            input = xinput_dim = n_in
+        else:
+            input = output
+            input_dim = n_hiddens[i-1]
+        W = weight_variable([input_dim, n_hidden])
+        b = bias_variable([n_hidden])
+        h = tf.nn.relu(tf.matmul(input, W) + b)
+        output = tf.nn.dropout(h, keep_prob)
+    # 隠れ層 - 出力層
+    W_out = weight_variable([n_hiddens[-1], n_out])    
+    b_out = bias_variable([n_out])
+    y = tf.nn.softmax(tf.matmul(output, W_out) + b_out)
+    return y
 
-'''
-データの生成
-'''
-mnist = datasets.fetch_mldata('MNIST original', data_home='.')
+def loss(y, t):
+    cross_entropy = tf.reduce_mean(-tf.reduce_sum(t * tf.log(y), reduction_indices=[1]))
+    return cross_entropy
 
-n = len(mnist.data)
-N = 10000  # MNISTの一部を使う
-train_size = 0.8
-indices = np.random.permutation(range(n))[:N]  # ランダムにN枚を選択
+def rraining(loss):
+    optimizer = tf.train.GradientDescentOptimizer(0.01)
+    train_step = optimizer.minimize(loss)
+    return train_step
 
-X = mnist.data[indices]
-y = mnist.target[indices]
-Y = np.eye(10)[y.astype(int)]  # 1-of-K 表現に変換
-
-X_train, X_test, Y_train, Y_test =\
-    train_test_split(X, Y, train_size=train_size)
-
-'''
-モデル設定
-'''
-n_in = len(X[0])  # 784
-n_hidden = 200
-n_out = len(Y[0])  # 10
-
-x = tf.placeholder(tf.float32, shape=[None, n_in])
-t = tf.placeholder(tf.float32, shape=[None, n_out])
-keep_prob = tf.placeholder(tf.float32)  # ドロップアウトしない確率
-
-# 入力層 - 隠れ層
-W0 = tf.Variable(tf.truncated_normal([n_in, n_hidden], stddev=0.01))
-b0 = tf.Variable(tf.zeros([n_hidden]))
-h0 = tf.nn.relu(tf.matmul(x, W0) + b0)
-h0_drop = tf.nn.dropout(h0, keep_prob)
-
-# 隠れ層 - 隠れ層
-W1 = tf.Variable(tf.truncated_normal([n_hidden, n_hidden], stddev=0.01))
-b1 = tf.Variable(tf.zeros([n_hidden]))
-h1 = tf.nn.relu(tf.matmul(h0_drop, W1) + b1)
-h1_drop = tf.nn.dropout(h1, keep_prob)
-
-W2 = tf.Variable(tf.truncated_normal([n_hidden, n_hidden], stddev=0.01))
-b2 = tf.Variable(tf.zeros([n_hidden]))
-h2 = tf.nn.relu(tf.matmul(h1_drop, W2) + b2)
-h2_drop = tf.nn.dropout(h2, keep_prob)
-
-# 隠れ層 - 出力層
-W3 = tf.Variable(tf.truncated_normal([n_hidden, n_out], stddev=0.01))
-b3 = tf.Variable(tf.zeros([n_out]))
-y = tf.nn.softmax(tf.matmul(h2_drop, W3) + b3)
-
-cross_entropy = tf.reduce_mean(-tf.reduce_sum(t * tf.log(y),
-                               reduction_indices=[1]))
-train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
-
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(t, 1))
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-'''
-モデル学習
-'''
-epochs = 30
-batch_size = 200
-
-init = tf.global_variables_initializer()
-sess = tf.Session()
-sess.run(init)
-
-n_batches = (int)(N * train_size) // batch_size
-
-for epoch in range(epochs):
-    X_, Y_ = shuffle(X_train, Y_train)
-
-    for i in range(n_batches):
-        start = i * batch_size
-        end = start + batch_size
-
-        sess.run(train_step, feed_dict={
-            x: X_[start:end],
-            t: Y_[start:end],
-            keep_prob: 0.5
-        })
-
-    # 訓練データに対する学習の進み具合を出力
-    loss = cross_entropy.eval(session=sess, feed_dict={
-        x: X_,
-        t: Y_,
-        keep_prob: 1.0
-    })
-    acc = accuracy.eval(session=sess, feed_dict={
-        x: X_,
-        t: Y_,
-        keep_prob: 1.0
-    })
-    print('epoch:', epoch, ' loss:', loss, ' accuracy:', acc)
-
-'''
-予測精度の評価
-'''
-accuracy_rate = accuracy.eval(session=sess, feed_dict={
-    x: X_test,
-    t: Y_test,
-    keep_prob: 1.0
-})
-print('accuracy: ', accuracy_rate)
+if __name__ == '__main__':
+    # 1. データの準備
+    # 2. モデルの設定
+    n_in = 784
+    n_hiddens =[200,200,200] # 各隠れ層の次元数
+    n_out = 10
+    x = tf.placeholder(tf.float32, shape=[None,n_in])
+    keep_prog = tf.placeholder(tf.float32)
+    y = inference(x, keep_prog, n_in=n_in n_hiddens=n_hiddens, n_out=n_out)
+    # モデル学習
+    # モデル評価

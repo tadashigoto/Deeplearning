@@ -4,7 +4,7 @@ from sklearn import datasets
 from sklearn.utils import shuffle
 from keras.models import Sequential
 from keras.layers import Dense,Activation
-from keras.layers.advanced_activations import LeakyReLU
+from keras.layers.advanced_activations import PReLU
 
 from keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
@@ -31,11 +31,11 @@ model.add(Dense(n_hidden,input_dim=n_in))
 model.add(Activation('sigmoid'))
 
 model.add(Dense(n_hidden))
-model.add(LeakyReLU(alpha=alpha))
+model.add(PReLU(alpha=alpha))
 model.add(Dense(n_hidden))
-model.add(LeakyReLU(alpha=alpha))
+model.add(PReLU(alpha=alpha))
 model.add(Dense(n_hidden))
-model.add(LeakyReLU(alpha=alpha))
+model.add(PReLU(alpha=alpha))
 
 model.add(Dense(n_out))
 model.add(Activation('softmax'))
